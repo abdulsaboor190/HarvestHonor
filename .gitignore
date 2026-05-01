@@ -1,0 +1,14 @@
+.env
+.env.*
+secrets.js
+config.js
+
+# Node (in case npm is used later)
+node_modules/
+
+# Mac junk
+.DS_Store
+
+# Windows junk
+Thumbs.db
+Desktop.ini

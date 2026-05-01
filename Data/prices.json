@@ -1,0 +1,970 @@
+{
+  "rice_basmati": {
+    "islamabad": {
+      "price": 27483,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 27058,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 18000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 19000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 21537,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 23314,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 16000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 19310,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 19310,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 27504,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 21312,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 20000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 23662,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 22218,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 14659,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 27993,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 24662,
+      "confidence": "high"
+    }
+  },
+  "rice_irri": {
+    "islamabad": {
+      "price": 17864,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 16427,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 16000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 18661,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 14092,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 19661,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 17100,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 12324,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 14000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 11657,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 12324,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 16660,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 16988,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 15303,
+      "confidence": "high"
+    }
+  },
+  "banana": {
+    "islamabad": {
+      "price": 31448,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 29104,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 20000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 21544,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 19356,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 20000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 20000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 24296,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 21312,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 15741,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 13608,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 12927,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 21192,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 19310,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 13466,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 16510,
+      "confidence": "high"
+    }
+  },
+  "pulse_masoor": {
+    "islamabad": {
+      "price": 29387,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 29387,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 22000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 24000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 24519,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 24726,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 25329,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 31437,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 26329,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 26516,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 24814,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 22000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 28000,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 24653,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 26000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 28993,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 27589,
+      "confidence": "high"
+    }
+  },
+  "pulse_moong": {
+    "islamabad": {
+      "price": 41361,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 39707,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 36000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 36000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 37757,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 34165,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 40000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 39101,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 36655,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 39101,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 39322,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 42000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 40591,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 37000,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 38000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 46996,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 40976,
+      "confidence": "high"
+    }
+  },
+  "pulse_mash": {
+    "islamabad": {
+      "price": 51299,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 49388,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 46000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 45000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 53559,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 42295,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 47331,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 48218,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 41656,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 45756,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 44158,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 47000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 49298,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 47216,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 50000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 48996,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 47622,
+      "confidence": "high"
+    }
+  },
+  "pulse_gram": {
+    "islamabad": {
+      "price": 28278,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 27981,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 22000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 21000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 24141,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 21647,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 24329,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 24991,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 25662,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 25283,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 24656,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 25000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 25000,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 25766,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 24000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 26992,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 30000,
+      "confidence": "high"
+    }
+  },
+  "potato": {
+    "islamabad": {
+      "price": 5522,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 5193,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 3000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 4000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 3457,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 2289,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 2321,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 2940,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 2823,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 4963,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 3175,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 3000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 2321,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 4878,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 3000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 4223,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 4121,
+      "confidence": "high"
+    }
+  },
+  "onion": {
+    "islamabad": {
+      "price": 10661,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 9968,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 8000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 8000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 6884,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 7000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 6000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 6209,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 5646,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 6573,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 5215,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 5000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 3634,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 9543,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 7000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 6733,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 6840,
+      "confidence": "high"
+    }
+  },
+  "tomato": {
+    "islamabad": {
+      "price": 10373,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 9175,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 8000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 11657,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 6636,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 8000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 6000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 5207,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 5000,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 7446,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 5646,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 4000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 4642,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 9655,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 7000,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 4223,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 8000,
+      "confidence": "high"
+    }
+  },
+  "sugar": {
+    "islamabad": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 15000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 14442,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 14165,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 15103,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 14831,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 14000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 14500,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 15326,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 14500,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 15149,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 15332,
+      "confidence": "high"
+    }
+  },
+  "gur": {
+    "islamabad": {
+      "price": 26797,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 25593,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 22000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 19000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 22850,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 22000,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 18000,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 24104,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 16641,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 26258,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 24495,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 18000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 18000,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 25650,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 24315,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 26497,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 24662,
+      "confidence": "high"
+    }
+  },
+  "garlic": {
+    "islamabad": {
+      "price": 55426,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 52874,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 60000,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 50000,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 35670,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 41602,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 43363,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 34200,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 47324,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 39013,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 35330,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 40000,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 35067,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 48722,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 56619,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 44490,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 60000,
+      "confidence": "high"
+    }
+  },
+  "wheat_flour": {
+    "islamabad": {
+      "price": 11377,
+      "confidence": "high"
+    },
+    "rawalpindi": {
+      "price": 10702,
+      "confidence": "high"
+    },
+    "gujranwala": {
+      "price": 10107,
+      "confidence": "high"
+    },
+    "sialkot": {
+      "price": 9559,
+      "confidence": "high"
+    },
+    "lahore": {
+      "price": 9050,
+      "confidence": "high"
+    },
+    "faisalabad": {
+      "price": 10482,
+      "confidence": "high"
+    },
+    "sargodha": {
+      "price": 9050,
+      "confidence": "high"
+    },
+    "multan": {
+      "price": 9708,
+      "confidence": "high"
+    },
+    "bahawalpur": {
+      "price": 10333,
+      "confidence": "high"
+    },
+    "karachi": {
+      "price": 10936,
+      "confidence": "high"
+    },
+    "hyderabad": {
+      "price": 10983,
+      "confidence": "high"
+    },
+    "sukkur": {
+      "price": 10200,
+      "confidence": "high"
+    },
+    "larkana": {
+      "price": 10000,
+      "confidence": "high"
+    },
+    "peshawar": {
+      "price": 11581,
+      "confidence": "high"
+    },
+    "bannu": {
+      "price": 11164,
+      "confidence": "high"
+    },
+    "quetta": {
+      "price": 11750,
+      "confidence": "high"
+    },
+    "khuzdar": {
+      "price": 11000,
+      "confidence": "high"
+    }
+  }
+}

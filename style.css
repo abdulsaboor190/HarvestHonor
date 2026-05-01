@@ -1,0 +1,376 @@
+/* ============================================================
+   HarvestHonor — Global Stylesheet
+   Mobile-first design (max-width: 480px, centered on desktop)
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. DESIGN TOKENS (CSS Custom Properties)
+   ------------------------------------------------------------ */
+:root {
+  /* Brand colours */
+  --color-green:  #2E7D32;
+  --color-red:    #C62828;
+  --color-bg:     #F9F9F9;
+  --color-card:   #FFFFFF;
+  --color-text:   #1A1A1A;
+  --color-muted:  #666666;
+
+  /* Derived shades */
+  --color-green-light: #E8F5E9;
+  --color-red-light:   #FFEBEE;
+  --color-border:      #E0E0E0;
+  --color-shadow:      rgba(0, 0, 0, 0.08);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Typography */
+  --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-size-sm:   13px;
+  --font-size-base: 15px;
+  --font-size-md:   17px;
+  --font-size-lg:   20px;
+  --font-size-xl:   24px;
+
+  /* Shape */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-pill: 999px;
+
+  --transition: 180ms ease;
+  --btn-height: 48px;
+}
+
+/* ------------------------------------------------------------
+   2. RESET & BASE
+   ------------------------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-base);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------
+   3. APP CONTAINER
+   ------------------------------------------------------------ */
+#app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------
+   4. UTILITY CLASSES
+   ------------------------------------------------------------ */
+.hidden       { display: none !important; }
+.text-muted   { color: var(--color-muted); }
+.text-green   { color: var(--color-green); }
+.text-red     { color: var(--color-red); }
+.text-center  { text-align: center; }
+.text-bold    { font-weight: 700; }
+.mt-md        { margin-top: var(--space-md); }
+.mt-lg        { margin-top: var(--space-lg); }
+.mb-md        { margin-bottom: var(--space-md); }
+
+/* ------------------------------------------------------------
+   5. BUTTON STYLES — full-width, 48px, pill-shaped
+   ------------------------------------------------------------ */
+.btn {
+  display: block;
+  width: 100%;
+  height: var(--btn-height);
+  padding: 0 var(--space-lg);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-base);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition), opacity var(--transition),
+              transform var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active      { transform: scale(0.97); }
+.btn:disabled    { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary     { background-color: var(--color-green); color: #fff; }
+.btn-primary:hover:not(:disabled) { background-color: #256427; }
+
+.btn-secondary   { background-color: transparent; color: var(--color-green);
+                   border: 2px solid var(--color-green); }
+.btn-secondary:hover:not(:disabled) { background-color: var(--color-green-light); }
+
+.btn-danger      { background-color: var(--color-red); color: #fff; }
+.btn-danger:hover:not(:disabled)  { background-color: #a82020; }
+
+.btn-share       { background-color: var(--color-text); color: #fff; }
+.btn-share:hover:not(:disabled)   { background-color: #333; }
+
+/* ------------------------------------------------------------
+   6. CARD / SURFACE
+   ------------------------------------------------------------ */
+.card {
+  background-color: var(--color-card);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  padding: var(--space-lg);
+}
+
+/* ------------------------------------------------------------
+   7. FORM ELEMENTS
+   ------------------------------------------------------------ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  height: var(--btn-height);
+  padding: 0 var(--space-md);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-card);
+  color: var(--color-text);
+  font-family: var(--font-base);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.form-input.error,
+.form-select.error {
+  border-color: var(--color-red);
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.12);
+}
+
+.form-error-msg {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+}
+
+/* Select arrow */
+.select-wrapper { position: relative; }
+.select-wrapper::after {
+  content: "▾";
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------
+   8. SCREEN CONTAINERS
+   One screen is visible at a time; use .hidden to toggle.
+   ------------------------------------------------------------ */
+
+/* 8a. Input Screen */
+.screen-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+}
+
+/* 8b. Result Screen */
+.screen-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+}
+
+.verdict-banner {
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.verdict-banner.verdict-fair      { background-color: var(--color-green-light); color: var(--color-green); }
+.verdict-banner.verdict-underpaid { background-color: var(--color-red-light);   color: var(--color-red); }
+.verdict-banner .verdict-emoji    { font-size: 40px; display: block; margin-bottom: var(--space-sm); }
+.verdict-banner .verdict-headline { font-size: var(--font-size-xl); font-weight: 800; }
+.verdict-banner .verdict-subtext  { font-size: var(--font-size-sm); margin-top: var(--space-xs); opacity: 0.85; }
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-base);
+}
+
+.price-row:last-child { border-bottom: none; }
+.price-row .label     { color: var(--color-muted); font-size: var(--font-size-sm); }
+.price-row .value     { font-weight: 700; font-size: var(--font-size-md); }
+
+/* 8c. Proof Card Screen */
+.screen-proof-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+}
+
+/* The card captured by html2canvas */
+.proof-card {
+  width: 100%;
+  background-color: var(--color-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--color-shadow);
+}
+
+.proof-card-header {
+  background-color: var(--color-green);
+  color: #fff;
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.proof-card-header .app-name  { font-size: var(--font-size-lg); font-weight: 800; }
+.proof-card-header .tagline   { font-size: var(--font-size-sm); opacity: 0.85; margin-top: var(--space-xs); }
+
+.proof-card-body   { padding: var(--space-lg); }
+
+.proof-card-footer {
+  background-color: var(--color-bg);
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+}
+
+/* 8d. Share Screen */
+.screen-share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+}
+
+.share-preview       { width: 100%; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 16px var(--color-shadow); }
+.share-preview img   { width: 100%; display: block; }
+
+/* ------------------------------------------------------------
+   9. SPINNER OVERLAY
+   ------------------------------------------------------------ */
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(249, 249, 249, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  z-index: 100;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-green);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-label { color: var(--color-muted); font-size: var(--font-size-sm); }
+
+/* ------------------------------------------------------------
+   10. MISC COMPONENTS
+   ------------------------------------------------------------ */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-md);
+}
+
+.app-header .logo-text  { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-green); }
+.app-header .logo-emoji { font-size: 24px; }
+
+.attribution-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background-color: var(--color-green-light);
+  color: var(--color-green);
+  border-radius: var(--radius-pill);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--space-md) 0;
+}
+
+/* ------------------------------------------------------------
+   11. RESPONSIVE — desktop enhancements (≥ 480 px)
+   ------------------------------------------------------------ */
+@media (min-width: 480px) {
+  body { padding: var(--space-xl) 0; }
+
+  #app {
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px var(--color-shadow);
+    background-color: var(--color-card);
+    min-height: unset;
+  }
+}
