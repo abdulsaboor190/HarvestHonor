@@ -1,700 +1,699 @@
 /* ============================================================
    HarvestHonor — app.js
-   Complete application logic (Phases 1–4).
-   Phase 5 (AI verdict) is wired in via api.js → getAIVerdict().
-
-   Data schema (prices.json):
-   {
-     "<crop_key>": {
-       "<city_key>": { "price": <number per 100kg>, "confidence": "high" }
-     }
-   }
-   NOTE: PBS prices are per 100 kg. We convert to per-kg for display.
    ============================================================ */
-
-// ------------------------------------------------------------
-// CONSTANTS
-// ------------------------------------------------------------
 
 const DATA_DATE   = "week of 23 April 2026";
 const DATA_SOURCE = "Pakistan Bureau of Statistics";
-
 const PRICES_JSON_PATH = "Data/prices.json";
 
-/**
- * Percentage gap threshold.
- * If the offered price is more than this % below market, = UNDERPAID.
- */
-const UNDERPAID_THRESHOLD = 5;
-
-// ------------------------------------------------------------
-// HUMAN-READABLE LABELS
-// Maps JSON keys → display names shown in the UI.
-// ------------------------------------------------------------
-
-const CROP_LABELS = {
-  rice_basmati: "Rice (Basmati)",
-  rice_irri:    "Rice (IRRI / Non-Basmati)",
-  banana:       "Banana",
-  pulse_masoor: "Pulse — Masoor (Red Lentil)",
-  pulse_moong:  "Pulse — Moong (Green Gram)",
-  pulse_mash:   "Pulse — Mash (Black Gram)",
-  pulse_gram:   "Pulse — Gram (Chickpea)",
-  potato:       "Potato",
-  onion:        "Onion",
-  tomato:       "Tomato",
-  sugar:        "Sugar",
-  gur:          "Gur (Jaggery)",
-  garlic:       "Garlic",
-  wheat_flour:  "Wheat Flour",
-};
-
-const CITY_LABELS = {
-  islamabad:   "Islamabad",
-  rawalpindi:  "Rawalpindi",
-  gujranwala:  "Gujranwala",
-  sialkot:     "Sialkot",
-  lahore:      "Lahore",
-  faisalabad:  "Faisalabad",
-  sargodha:    "Sargodha",
-  multan:      "Multan",
-  bahawalpur:  "Bahawalpur",
-  karachi:     "Karachi",
-  hyderabad:   "Hyderabad",
-  sukkur:      "Sukkur",
-  larkana:     "Larkana",
-  peshawar:    "Peshawar",
-  bannu:       "Bannu",
-  quetta:      "Quetta",
-  khuzdar:     "Khuzdar",
-};
-
-// ------------------------------------------------------------
-// MODULE-LEVEL STATE
-// ------------------------------------------------------------
-
-/** @type {Object|null} Full parsed prices.json */
 let priceData = null;
 
-// ------------------------------------------------------------
-// BOOTSTRAP
-// ------------------------------------------------------------
+let currentScreen = "input";
+let currentScreenData = null;
+let savedCrop = "";
+let savedCity = "";
+
+function renderCurrentScreen() {
+  if (currentScreen === "input") showInputScreen();
+  else if (currentScreen === "result") showResultScreen(currentScreenData);
+  else if (currentScreen === "proof") showProofCard(currentScreenData);
+}
+
+function handleLangToggle() {
+  if (typeof toggleLanguage === 'function') {
+    toggleLanguage();
+  }
+  renderCurrentScreen();
+}
+
+function getToggleButtonHTML() {
+  return `
+    <button onclick="handleLangToggle()" style="position:absolute; top:16px; right:16px; font-size:12px; padding:6px 12px; border:1px solid #ccc; background:white; border-radius:16px; cursor:pointer; z-index:100;">
+      ${t().toggleLang}
+    </button>
+  `;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const response = await fetch(PRICES_JSON_PATH);
-    if (!response.ok) throw new Error(`HTTP ${response.status} — ${PRICES_JSON_PATH}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     priceData = await response.json();
-    console.log(`[HarvestHonor] prices.json loaded. Crops: ${Object.keys(priceData).length}`);
     showInputScreen();
   } catch (err) {
-    document.getElementById("app").innerHTML = `
-      <div class="card" style="margin-top:48px;text-align:center;">
-        <span style="font-size:48px;">⚠️</span>
-        <h2 style="color:var(--color-red);margin-top:12px;">Could not load price data</h2>
-        <p class="text-muted" style="margin-top:8px;font-size:13px;line-height:1.7">
-          ${err.message}<br><br>
-          <strong>Tip:</strong> Open this app via a local server (e.g. VS Code Live Server)
-          instead of double-clicking index.html directly.
-        </p>
-      </div>`;
-    console.error("[HarvestHonor] Failed to load prices.json:", err);
+    document.getElementById("app").innerHTML = `<div style="padding:20px;color:red;text-align:center;">Error loading prices.json<br>${err.message}</div>`;
   }
 });
 
-// ============================================================
-// SCREEN 1 — INPUT SCREEN
-// ============================================================
-
 function showInputScreen() {
+  currentScreen = "input";
   const app = document.getElementById("app");
-
-  // Build crop options
-  const cropOptions = Object.keys(priceData)
-    .map(key => `<option value="${key}">${CROP_LABELS[key] || key}</option>`)
-    .join("");
+  
+  let cropOptions = `<option value="" disabled ${!savedCrop ? 'selected' : ''}>${t().placeholderCrop}</option>`;
+  if (priceData) {
+    for (const cropKey in priceData) {
+      const cropName = cropKey.charAt(0).toUpperCase() + cropKey.slice(1);
+      cropOptions += `<option value="${cropKey}" ${savedCrop === cropKey ? 'selected' : ''}>${cropName}</option>`;
+    }
+  }
 
   app.innerHTML = `
-    <div class="screen-input" id="screen-input">
-
-      <!-- Header -->
-      <header class="app-header">
-        <span class="logo-emoji">🌾</span>
-        <span class="logo-text">HarvestHonor</span>
-      </header>
-
-      <!-- Intro copy -->
-      <div class="card" style="background:var(--color-green-light);box-shadow:none;padding:var(--space-md);">
-        <p style="font-size:13px;color:var(--color-green);line-height:1.6;">
-          Enter your crop details below. We'll compare the buyer's quoted
-          price against official <strong>${DATA_SOURCE}</strong> market
-          data and tell you if you're being underpaid.
-        </p>
+    ${getToggleButtonHTML()}
+    <header class="app-header">
+      <h1>${t().appName}</h1>
+      <p>${t().appSubtitle}</p>
+    </header>
+    <div class="form-container">
+      <div id="global-error" class="global-error"></div>
+      
+      <div class="form-group">
+        <label for="crop-select">${t().labelCrop}</label>
+        <select id="crop-select">${cropOptions}</select>
+        <div id="crop-error" class="form-error">${t().errorSelectCrop}</div>
       </div>
-
-      <!-- Form -->
-      <form id="compare-form" novalidate>
-
-        <!-- Crop -->
-        <div class="form-group">
-          <label class="form-label" for="input-crop">Crop</label>
-          <div class="select-wrapper">
-            <select class="form-select" id="input-crop" required>
-              <option value="" disabled selected>Select a crop…</option>
-              ${cropOptions}
-            </select>
-          </div>
-          <span class="form-error-msg hidden" id="err-crop">Please select a crop.</span>
-        </div>
-
-        <!-- City -->
-        <div class="form-group">
-          <label class="form-label" for="input-city">Your City / Market</label>
-          <div class="select-wrapper">
-            <select class="form-select" id="input-city" required>
-              <option value="" disabled selected>Select crop first…</option>
-            </select>
-          </div>
-          <span class="form-error-msg hidden" id="err-city">Please select a city.</span>
-        </div>
-
-        <!-- Quantity -->
-        <div class="form-group">
-          <label class="form-label" for="input-qty">Quantity (kg)</label>
-          <input
-            class="form-input"
-            type="number"
-            id="input-qty"
-            placeholder="e.g. 500"
-            min="1"
-            step="1"
-            required
-          />
-          <span class="form-error-msg hidden" id="err-qty">Enter a valid quantity (min 1 kg).</span>
-        </div>
-
-        <!-- Quoted Price -->
-        <div class="form-group">
-          <label class="form-label" for="input-price">Buyer's Offered Price (Rs per kg)</label>
-          <input
-            class="form-input"
-            type="number"
-            id="input-price"
-            placeholder="e.g. 150"
-            min="1"
-            step="0.01"
-            required
-          />
-          <span class="form-error-msg hidden" id="err-price">Enter a valid price (Rs per kg).</span>
-        </div>
-
-        <button class="btn btn-primary" type="submit" id="btn-compare">
-          Compare My Price →
-        </button>
-
-      </form>
-
-      <!-- Attribution -->
-      <p style="font-size:11px;color:var(--color-muted);text-align:center;line-height:1.5;">
-        Market data: <strong>${DATA_SOURCE}</strong> · ${DATA_DATE}
-      </p>
-
+      
+      <div class="form-group">
+        <label for="city-select">${t().labelCity}</label>
+        <select id="city-select">
+          <option value="" disabled selected>${t().placeholderCity}</option>
+        </select>
+        <div id="city-error" class="form-error">${t().errorSelectCity}</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="quantity-input">${t().labelQuantity}</label>
+        <input type="number" id="quantity-input" placeholder="${t().placeholderQuantity}" min="1">
+        <div id="quantity-error" class="form-error">${t().errorInvalidQty}</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="quoted-price-input">${t().labelQuotedPrice}</label>
+        <input type="number" id="quoted-price-input" placeholder="${t().placeholderPrice}" min="1">
+        <div id="price-error" class="form-error">${t().errorInvalidPrice}</div>
+      </div>
+      
+      <button id="btn-submit" class="btn btn-primary">${t().btnCheckPrice}</button>
     </div>
   `;
 
-  // ---- Dynamic city population when crop changes ----
-  const cropSelect = document.getElementById("input-crop");
-  const citySelect = document.getElementById("input-city");
+  const cropSelect = document.getElementById("crop-select");
+  const citySelect = document.getElementById("city-select");
+  const btnSubmit = document.getElementById("btn-submit");
+
+  function populateCities() {
+    const selectedCrop = cropSelect.value;
+    if (priceData && priceData[selectedCrop]) {
+      let cityOptions = `<option value="" disabled ${!savedCity ? 'selected' : ''}>${t().placeholderCity}</option>`;
+      for (const cityKey in priceData[selectedCrop]) {
+        const cityName = cityKey.charAt(0).toUpperCase() + cityKey.slice(1);
+        cityOptions += `<option value="${cityKey}" ${savedCity === cityKey ? 'selected' : ''}>${cityName}</option>`;
+      }
+      citySelect.innerHTML = cityOptions;
+    } else {
+      citySelect.innerHTML = `<option value="" disabled selected>${t().placeholderCity}</option>`;
+    }
+  }
+
+  // Edge Case 4: Keep the previously selected crop and city 
+  if (savedCrop) {
+    populateCities();
+  }
 
   cropSelect.addEventListener("change", () => {
-    const cropKey = cropSelect.value;
-    const cities  = priceData[cropKey] ? Object.keys(priceData[cropKey]) : [];
-
-    citySelect.innerHTML = cities.length
-      ? `<option value="" disabled selected>Select a city…</option>` +
-        cities.map(c => `<option value="${c}">${CITY_LABELS[c] || c}</option>`).join("")
-      : `<option value="" disabled selected>No cities available</option>`;
-
-    // Clear city error if re-populating
-    document.getElementById("err-city").classList.add("hidden");
-    citySelect.classList.remove("error");
+    savedCity = ""; 
+    populateCities();
   });
 
-  // ---- Form submission ----
-  document.getElementById("compare-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  btnSubmit.addEventListener("click", () => {
+    // Reset errors
+    document.getElementById("global-error").textContent = "";
+    document.getElementById("crop-error").classList.remove("visible");
+    document.getElementById("city-error").classList.remove("visible");
+    document.getElementById("quantity-error").classList.remove("visible");
+    document.getElementById("price-error").classList.remove("visible");
 
-    const cropKey     = cropSelect.value;
-    const cityKey     = citySelect.value;
-    const quantity    = parseFloat(document.getElementById("input-qty").value);
-    const quotedPrice = parseFloat(document.getElementById("input-price").value);
+    // Read values
+    const crop = cropSelect.value;
+    const city = citySelect.value;
+    const quantityStr = document.getElementById("quantity-input").value;
+    const priceStr = document.getElementById("quoted-price-input").value;
 
-    if (!validateInputs(cropKey, cityKey, quantity, quotedPrice)) return;
+    let isValid = true;
 
-    try {
-      showSpinner("Calculating market price…");
-      const data = await comparePrice(cropKey, cityKey, quantity, quotedPrice);
-      hideSpinner();
-      showResultScreen(data);
-    } catch (err) {
-      hideSpinner();
-      alert("Something went wrong: " + err.message);
-      console.error(err);
+    if (!crop) {
+      document.getElementById("crop-error").classList.add("visible");
+      isValid = false;
     }
+    if (!city || city === "") {
+      document.getElementById("city-error").classList.add("visible");
+      isValid = false;
+    }
+    const quantity = parseFloat(quantityStr);
+    if (!quantityStr || isNaN(quantity) || quantity < 1) {
+      document.getElementById("quantity-error").classList.add("visible");
+      isValid = false;
+    }
+    const quotedPrice = parseFloat(priceStr);
+    if (!priceStr || isNaN(quotedPrice) || quotedPrice < 1) {
+      document.getElementById("price-error").classList.add("visible");
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
+    const data = comparePrice(crop, city, quantity, quotedPrice);
+    
+    savedCrop = crop;
+    savedCity = city;
+
+    // Edge Case 1: Missing crop/city data
+    if (data.error && (data.error.includes("Data not available") || data.error.includes("ڈیٹا دستیاب نہیں"))) {
+      currentScreen = "result";
+      currentScreenData = data;
+      showErrorCard(data.error);
+      return;
+    }
+
+    if (data.error) {
+      document.getElementById("global-error").textContent = data.error;
+      return;
+    }
+
+    const actions = getActionOptions(data.verdict, data.confidenceLevel);
+    data.actions = actions; 
+
+    showResultScreen(data);
   });
 }
 
-/** Returns true if all fields are valid; shows inline errors otherwise. */
-function validateInputs(crop, city, quantity, quotedPrice) {
-  let valid = true;
-
-  const setError = (id, fieldId, show) => {
-    document.getElementById(id).classList.toggle("hidden", !show);
-    document.getElementById(fieldId).classList.toggle("error", show);
-    if (show) valid = false;
-  };
-
-  setError("err-crop",  "input-crop",  !crop);
-  setError("err-city",  "input-city",  !city);
-  setError("err-qty",   "input-qty",   !quantity || quantity < 1);
-  setError("err-price", "input-price", !quotedPrice || quotedPrice < 1);
-
-  return valid;
+function showErrorCard(errorMsg) {
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    ${getToggleButtonHTML()}
+    <div style="padding: 16px;">
+      <div style="background: white; border-left: 4px solid #E65100; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 40px;">
+        <div style="font-size: 32px; margin-bottom: 12px;">⚠</div>
+        <h3 style="font-size: 16px; margin-bottom: 16px; color: var(--color-text);">${errorMsg}</h3>
+        <a href="https://www.pbs.gov.pk/spi" target="_blank" style="color: #1565C0; text-decoration: underline; font-size: 14px; display: block; margin-bottom: 24px;">Check pbs.gov.pk →</a>
+        <button id="btn-back-error" class="btn btn-primary">${t().btnBack}</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("btn-back-error").addEventListener("click", () => {
+    showInputScreen();
+  });
 }
-
-// ============================================================
-// SCREEN 2 — RESULT SCREEN
-// ============================================================
 
 function showResultScreen(data) {
+  currentScreen = "result";
+  currentScreenData = data;
   const app = document.getElementById("app");
+  
+  let bannerClass = "";
+  let bannerTitle = "";
+  let bannerSub = "";
 
-  const isFair        = data.verdict === "FAIR";
-  const verdictClass  = isFair ? "verdict-fair" : "verdict-underpaid";
-  const verdictEmoji  = isFair ? "✅" : "🚨";
-  const verdictTitle  = isFair ? "Fair Price" : "You May Be Underpaid!";
-  const verdictSub    = isFair
-    ? `The offered price is within ${UNDERPAID_THRESHOLD}% of the PBS market rate.`
-    : `You are being offered ${formatPercent(data.percentageGap)} less than the PBS market rate.`;
+  if (data.verdict === "underpaid") {
+    bannerClass = "underpaid";
+    bannerTitle = t().verdictUnderpaid;
+    bannerSub = `${t().verdictUnderpaidSub} ${Math.abs(data.percentageGap)}%`;
+  } else if (data.verdict === "fair") {
+    bannerClass = "fair";
+    bannerTitle = t().verdictFair;
+    bannerSub = t().verdictFairSub;
+  } else if (data.verdict === "above_market") {
+    bannerClass = "above-market";
+    bannerTitle = t().verdictAbove;
+    bannerSub = t().verdictAboveSub;
+  }
 
-  const totalMarket = data.marketPrice * data.quantity;
-  const totalQuoted = data.quotedPrice  * data.quantity;
-  const totalLoss   = totalMarket - totalQuoted;
+  const diffVal = Math.abs(data.rupeeDifference).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const diffStr = data.rupeeDifference < 0 ? `Rs -${diffVal}` : `Rs +${diffVal}`;
+  const diffClass = data.rupeeDifference < 0 ? "text-red" : "text-green";
+
+  let confClass = "";
+  let confText = "";
+  if (data.confidenceLevel === "high") {
+    confClass = "high";
+    confText = t().confidenceHigh;
+  } else if (data.confidenceLevel === "moderate") {
+    confClass = "moderate";
+    confText = t().confidenceModerate;
+  }
+
+  const cropName = data.crop.charAt(0).toUpperCase() + data.crop.slice(1);
+  const cityName = data.city.charAt(0).toUpperCase() + data.city.slice(1);
+
+  const chipsHtml = (data.actions || []).map(action => 
+    `<div class="chip">${action}</div>`
+  ).join('');
 
   app.innerHTML = `
-    <div class="screen-result" id="screen-result">
+    ${getToggleButtonHTML()}
+    <div class="verdict-banner ${bannerClass}">
+      <h2>${bannerTitle}</h2>
+      <p>${bannerSub}</p>
+    </div>
 
-      <!-- Header -->
-      <header class="app-header">
-        <span class="logo-emoji">🌾</span>
-        <span class="logo-text">HarvestHonor</span>
-      </header>
-
-      <!-- Verdict Banner -->
-      <div class="verdict-banner ${verdictClass}">
-        <span class="verdict-emoji">${verdictEmoji}</span>
-        <div class="verdict-headline">${verdictTitle}</div>
-        <div class="verdict-subtext">${verdictSub}</div>
-      </div>
-
-      <!-- Price Breakdown Card -->
+    <div class="result-container">
       <div class="card">
         <div class="price-row">
-          <span class="label">Crop</span>
-          <span class="value">${CROP_LABELS[data.crop] || data.crop}</span>
+          <span class="label">${t().labelMarketPrice}</span>
+          <span class="value">Rs ${data.marketPrice.toLocaleString()} / 100kg</span>
         </div>
         <div class="price-row">
-          <span class="label">Market (${CITY_LABELS[data.city] || data.city})</span>
-          <span class="value">${formatPKR(data.marketPrice)} / kg</span>
+          <span class="label">${t().labelQuoted}</span>
+          <span class="value">Rs ${data.quotedPrice.toLocaleString()} / 100kg</span>
         </div>
         <div class="price-row">
-          <span class="label">Buyer Offered</span>
-          <span class="value ${isFair ? "text-green" : "text-red"}">${formatPKR(data.quotedPrice)} / kg</span>
+          <span class="label">${t().labelDifference}</span>
+          <span class="value ${diffClass}">${diffStr} total on ${data.quantity}kg</span>
         </div>
         <div class="price-row">
-          <span class="label">Gap</span>
-          <span class="value ${isFair ? "text-green" : "text-red"}">${isFair ? "−" : "−"}${formatPercent(data.percentageGap)}</span>
+          <span class="label">${t().labelCropCity}</span>
+          <span class="value">${cropName} — ${cityName}</span>
         </div>
-        <div class="divider"></div>
-        <div class="price-row">
-          <span class="label">Your Quantity</span>
-          <span class="value">${data.quantity.toLocaleString()} kg</span>
-        </div>
-        <div class="price-row">
-          <span class="label">Market Value (total)</span>
-          <span class="value">${formatPKR(totalMarket)}</span>
-        </div>
-        <div class="price-row">
-          <span class="label">Offered Value (total)</span>
-          <span class="value">${formatPKR(totalQuoted)}</span>
-        </div>
-        ${!isFair ? `
-        <div class="price-row">
-          <span class="label" style="color:var(--color-red);">Potential Loss</span>
-          <span class="value text-red">−${formatPKR(totalLoss)}</span>
-        </div>` : ""}
       </div>
 
-      <!-- AI Verdict Card -->
-      <div class="card" id="ai-verdict-card" style="border-left: 4px solid ${isFair ? "var(--color-green)" : "var(--color-red)"};">
-        <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-muted);margin-bottom:8px;">
-          🤖 AI Advisory
-        </p>
-        <p id="ai-verdict-text" style="font-size:14px;line-height:1.7;color:var(--color-text);">
-          ${data.aiVerdict || '<span class="text-muted">Loading AI advisory…</span>'}
-        </p>
+      <div class="confidence-wrapper">
+        <div class="confidence-pill ${confClass}">${confText}</div>
       </div>
 
-      <!-- Attribution -->
-      <div class="attribution-chip">
-        📊 ${DATA_SOURCE} · ${DATA_DATE}
+      <div class="action-section">
+        <h3>${t().labelWhatToDo}</h3>
+        <div class="chip-container">
+          ${chipsHtml}
+        </div>
       </div>
 
-      <!-- Actions -->
-      <button class="btn btn-primary" id="btn-proof-card">
-        📄 Get Proof Card
-      </button>
-      <button class="btn btn-secondary" id="btn-start-over" style="margin-top:0">
-        ← Compare Another Crop
-      </button>
+      <div id="ai-section" style="margin-bottom: 24px;">
+        <div style="text-align:center; padding:20px;">
+          <div style="display:inline-block; font-size: 24px;">⏳</div>
+          <p style="margin-top:8px; font-size:14px; color:var(--color-muted);">${t().labelAILoading}</p>
+        </div>
+      </div>
 
+      <button id="btn-proof" class="btn btn-dark">${t().btnGenerateProof}</button>
+
+      <div style="background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #1565C0; margin-top: 16px; margin-bottom: 16px; display: flex; align-items: start; gap: 8px;">
+        <span style="font-size: 14px;">ℹ</span>
+        <span>${t().labelUpdateNote}</span>
+      </div>
+
+      <p class="footer-source">${t().labelSource}<br>${t().labelDataDate}</p>
+
+      <button id="btn-back" class="back-link">${t().btnBack}</button>
     </div>
   `;
 
-  // Buttons
-  document.getElementById("btn-proof-card").addEventListener("click", () => showProofCard(data));
-  document.getElementById("btn-start-over").addEventListener("click", () => showInputScreen());
+  document.getElementById("btn-proof").addEventListener("click", () => {
+    showProofCard(data);
+  });
 
-  // If AI verdict not yet loaded, fetch it asynchronously and inject
-  if (!data.aiVerdict) {
-    getAIVerdict(
-      CROP_LABELS[data.crop] || data.crop,
-      CITY_LABELS[data.city] || data.city,
-      data.marketPrice,
-      data.quotedPrice,
-      data.percentageGap,
-      data.verdict
-    ).then(text => {
-      data.aiVerdict = text;
-      const el = document.getElementById("ai-verdict-text");
-      if (el) el.textContent = text;
-    }).catch(() => {
-      const el = document.getElementById("ai-verdict-text");
-      if (el) el.textContent = "AI advisory unavailable right now.";
-    });
+  document.getElementById("btn-back").addEventListener("click", () => {
+    showInputScreen();
+  });
+
+  if (typeof getAIVerdict === 'function' && !data.aiResult) {
+    let aiResolved = false;
+
+    // Edge Case 2: AI takes too long
+    const aiTimeout = setTimeout(() => {
+      if (!aiResolved) {
+        aiResolved = true;
+        const fallbackAi = {
+          urdu_line: "سرکاری ریکارڈ کے مطابق یہ قیمت بازار سسے کم ہے — براہ کرم دوبارہ غور کریں۔",
+          explanation: "AI explanation unavailable right now — price comparison above is still accurate",
+          isFallback: true
+        };
+        data.aiResult = fallbackAi;
+        renderAiBoxes(fallbackAi);
+      }
+    }, 8000);
+
+    getAIVerdict(data.crop, data.city, data.marketPrice, data.quotedPrice, data.percentageGap, data.verdict)
+      .then(aiData => {
+        if (!aiResolved) {
+          aiResolved = true;
+          clearTimeout(aiTimeout);
+          data.aiResult = aiData;
+          renderAiBoxes(aiData);
+        }
+      })
+      .catch(err => {
+        if (!aiResolved) {
+          aiResolved = true;
+          clearTimeout(aiTimeout);
+          const fallbackAi = {
+            urdu_line: "سرکاری ریکارڈ کے مطابق یہ قیمت بازار سسے کم ہے — براہ کرم دوبارہ غور کریں۔",
+            explanation: "AI explanation unavailable right now — price comparison above is still accurate",
+            isFallback: true
+          };
+          data.aiResult = fallbackAi;
+          renderAiBoxes(fallbackAi);
+        }
+      });
+  } else if (data.aiResult) {
+    renderAiBoxes(data.aiResult);
+  }
+
+  function renderAiBoxes(aiData) {
+    const aiSec = document.getElementById("ai-section");
+    if (!aiSec) return;
+
+    let html = `
+      <div style="background-color: #FFFDE7; border: 1px solid #F9A825; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--color-muted); margin-bottom: 8px;">${t().labelYouCanSay}</div>
+        <div dir="rtl" style="font-weight: bold; font-size: 17px; color: var(--color-text);">${aiData.urdu_line}</div>
+        ${aiData.isFallback ? `<div style="font-size: 11px; color: var(--color-muted); margin-top: 8px;">${t().labelAIUnavailable}</div>` : ''}
+      </div>
+    `;
+
+    if (!aiData.isFallback && aiData.explanation) {
+      html += `
+        <div style="background-color: #F5F5F5; border: 1px solid #E0E0E0; border-radius: 8px; padding: 14px;">
+          <div style="font-size: 12px; color: var(--color-muted); margin-bottom: 8px;">${t().labelWhyHappening}</div>
+          <div style="font-size: 14px; color: var(--color-muted); font-weight: normal;">${aiData.explanation}</div>
+        </div>
+      `;
+    }
+
+    aiSec.innerHTML = html;
   }
 }
 
-// ============================================================
-// SCREEN 3 — PROOF CARD
-// ============================================================
-
 function showProofCard(data) {
+  currentScreen = "proof";
+  currentScreenData = data;
   const app = document.getElementById("app");
+  
+  const isLoss = data.rupeeDifference < 0;
+  const diffColor = isLoss ? 'var(--color-red)' : 'var(--color-green)';
+  const diffWord = isLoss ? t().totalDiffLoss : t().totalDiffGain;
+  const diffAbs = Math.abs(data.rupeeDifference).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const pctAbs = Math.abs(data.percentageGap);
+  
+  let headerColor = 'var(--color-green)';
+  let statusText = '';
+  let rightBoxBg = '#E8F5E9';
+  let cardBorder = '2px solid var(--color-green)';
+  
+  if (data.verdict === 'underpaid') {
+    headerColor = 'var(--color-red)';
+    statusText = `${t().verdictUnderpaid} — ${pctAbs}%`;
+    rightBoxBg = '#FFEBEE';
+    cardBorder = '2px solid var(--color-red)';
+  } else if (data.verdict === 'fair') {
+    statusText = `${t().verdictFair} — ${t().verdictFairSub}`;
+  } else {
+    statusText = `${t().verdictAbove} — ${pctAbs}%`;
+  }
 
-  const isFair       = data.verdict === "FAIR";
-  const verdictColor = isFair ? "var(--color-green)" : "var(--color-red)";
-  const verdictBg    = isFair ? "var(--color-green-light)" : "var(--color-red-light)";
-  const verdictEmoji = isFair ? "✅" : "🚨";
-  const verdictLabel = isFair ? "FAIR PRICE" : "UNDERPAID";
+  const cropName = data.crop.charAt(0).toUpperCase() + data.crop.slice(1);
+  const cityName = data.city.charAt(0).toUpperCase() + data.city.slice(1);
+
+  const diffLine = t().totalDiffLine
+    .replace("[qty]", data.quantity)
+    .replace("[amt]", diffAbs)
+    .replace("[type]", diffWord);
 
   app.innerHTML = `
-    <div class="screen-proof-card" id="screen-proof-card">
-
-      <!-- Header -->
-      <header class="app-header" style="width:100%;">
-        <span class="logo-emoji">🌾</span>
-        <span class="logo-text">HarvestHonor</span>
-      </header>
-
-      <p class="text-muted" style="font-size:13px;text-align:center;">
-        Your Proof Card is ready. Capture or share it as evidence.
-      </p>
-
-      <!-- ===== THE CARD (captured by html2canvas) ===== -->
-      <div class="proof-card" id="proof-card">
-
-        <div class="proof-card-header">
-          <div class="app-name">🌾 HarvestHonor</div>
-          <div class="tagline">AI-Powered Crop Price Verification</div>
+    ${getToggleButtonHTML()}
+    <div style="padding: 16px; font-family: system-ui, -apple-system, sans-serif;">
+      <div id="proof-card" style="background: white; border-radius: 12px; border: ${cardBorder}; box-shadow: 0 4px 16px rgba(0,0,0,0.12); padding: 0; max-width: 400px; margin: 40px auto 0; overflow: hidden; position: relative;">
+        <div style="width: 100%; height: 48px; background-color: ${headerColor}; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold;">
+          ${t().labelReportTitle}
         </div>
-
-        <div class="proof-card-body">
-
-          <!-- Verdict badge -->
-          <div style="text-align:center;margin-bottom:16px;">
-            <span style="
-              display:inline-block;
-              background:${verdictBg};
-              color:${verdictColor};
-              padding:8px 20px;
-              border-radius:999px;
-              font-size:18px;
-              font-weight:800;
-              letter-spacing:.04em;">
-              ${verdictEmoji} ${verdictLabel}
-            </span>
+        
+        <div style="padding: 24px;">
+          <div style="text-align: center; font-size: 24px; font-weight: bold; color: var(--color-text);">
+            ${cropName} — ${cityName}
           </div>
-
-          <!-- Crop & City -->
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;">
-            <span style="color:#666;">Crop</span>
-            <span style="font-weight:700;">${CROP_LABELS[data.crop] || data.crop}</span>
+          
+          <div style="display: flex; gap: 14px; margin-top: 16px;">
+            <div style="flex: 1; background: #E8F5E9; border-radius: 8px; padding: 12px; color: var(--color-text);">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-muted);">${t().labelOfficialMarket}</div>
+              <div style="margin-top: 4px;"><span style="font-size: 14px; font-weight: 400;">Rs</span> <span style="font-size: 28px; font-weight: 800;">${data.marketPrice.toLocaleString()}</span></div>
+              <div style="font-size: 11px; color: var(--color-muted);">${t().labelPer100kg}</div>
+            </div>
+            <div style="flex: 1; background: ${rightBoxBg}; border-radius: 8px; padding: 12px; color: var(--color-text);">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-muted);">${t().labelBuyerOffer}</div>
+              <div style="margin-top: 4px;"><span style="font-size: 14px; font-weight: 400;">Rs</span> <span style="font-size: 28px; font-weight: 800;">${data.quotedPrice.toLocaleString()}</span></div>
+              <div style="font-size: 11px; color: var(--color-muted);">${t().labelPer100kg}</div>
+            </div>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:14px;">
-            <span style="color:#666;">Market / City</span>
-            <span style="font-weight:700;">${CITY_LABELS[data.city] || data.city}</span>
+          
+          <div style="width: 100%; text-align: center; font-size: 18px; font-weight: 700; color: ${headerColor}; margin-top: 20px;">
+            ${statusText}
           </div>
-
-          <div style="height:1px;background:#E0E0E0;margin-bottom:16px;"></div>
-
-          <!-- Prices -->
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;">
-            <span style="color:#666;">PBS Market Price</span>
-            <span style="font-weight:700;">${formatPKR(data.marketPrice)} / kg</span>
+          
+          <div style="text-align: center; font-size: 14px; margin-top: 8px; color: ${diffColor};">
+            ${diffLine}
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;">
-            <span style="color:#666;">Buyer Offered</span>
-            <span style="font-weight:700;color:${verdictColor};">${formatPKR(data.quotedPrice)} / kg</span>
+          
+          <hr style="border: 0; border-top: 1px solid #E0E0E0; margin: 12px 0;">
+          
+          <div style="text-align: center; font-size: 12px; color: var(--color-muted);">
+            ${t().labelSource}<br>${t().labelDataDate}
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:14px;">
-            <span style="color:#666;">Price Gap</span>
-            <span style="font-weight:800;color:${verdictColor};">−${formatPercent(data.percentageGap)}</span>
+          
+          <div style="text-align: center; font-size: 10px; color: #BDBDBD; margin-top: 16px;">
+            ${t().labelWatermark}
           </div>
-
-          <div style="height:1px;background:#E0E0E0;margin-bottom:16px;"></div>
-
-          <!-- Totals -->
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;">
-            <span style="color:#666;">Quantity</span>
-            <span style="font-weight:700;">${data.quantity.toLocaleString()} kg</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span style="color:#666;">You Should Receive</span>
-            <span style="font-weight:700;">${formatPKR(data.marketPrice * data.quantity)}</span>
-          </div>
-          ${!isFair ? `
-          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px;">
-            <span style="color:var(--color-red);">Potential Loss</span>
-            <span style="font-weight:800;color:var(--color-red);">−${formatPKR((data.marketPrice - data.quotedPrice) * data.quantity)}</span>
-          </div>` : ""}
-
-          ${data.aiVerdict ? `
-          <div style="margin-top:16px;padding:12px;background:#F9F9F9;border-radius:8px;font-size:12px;color:#444;line-height:1.6;">
-            🤖 <em>${data.aiVerdict}</em>
-          </div>` : ""}
-
         </div>
-
-        <div class="proof-card-footer">
-          📊 Data: ${DATA_SOURCE} · ${DATA_DATE}<br>
-          <span style="font-size:10px;">harvesthonor.app · Verify prices before negotiating</span>
-        </div>
-
       </div>
-      <!-- ===== END PROOF CARD ===== -->
-
-      <!-- Actions -->
-      <button class="btn btn-primary" id="btn-generate-image">
-        📸 Generate Share Image
-      </button>
-      <button class="btn btn-secondary" id="btn-back-result" style="margin-top:0;">
-        ← Back to Results
-      </button>
-
+      
+      <div style="max-width: 400px; margin: 24px auto 0;">
+        <button id="btn-share" style="width: 100%; height: 52px; background: #1565C0; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">
+          ${t().btnShare}
+        </button>
+        <div id="share-msg" style="text-align: center; font-size: 12px; color: var(--color-muted); margin-top: 8px; display: none;">
+          ${t().shareNotAvailable}
+        </div>
+        
+        <button id="btn-screenshot" style="width: 100%; height: 52px; background: var(--color-text); color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+          ${t().btnScreenshot}
+        </button>
+        
+        <button id="btn-back-proof" style="display: block; text-align: center; font-size: 14px; color: var(--color-text); text-decoration: underline; background: none; border: none; cursor: pointer; width: 100%; padding: 16px; margin-top: 8px;">
+          ${t().btnBackToResult}
+        </button>
+      </div>
     </div>
   `;
 
-  document.getElementById("btn-back-result").addEventListener("click", () => showResultScreen(data));
+  document.getElementById("btn-back-proof").addEventListener("click", () => {
+    showResultScreen(data);
+  });
 
-  document.getElementById("btn-generate-image").addEventListener("click", async () => {
-    const btn = document.getElementById("btn-generate-image");
+  document.getElementById("btn-share").addEventListener("click", async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: t().labelReportTitle,
+          text: `HarvestHonor Report for ${cropName} in ${cityName}. Market: Rs ${data.marketPrice}/100kg. Offered: Rs ${data.quotedPrice}/100kg.`,
+          url: window.location.href
+        });
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+    } else {
+      document.getElementById("share-msg").style.display = "block";
+    }
+  });
+
+  // Edge Case 3: html2canvas fails
+  document.getElementById("btn-screenshot").addEventListener("click", async () => {
+    const btn = document.getElementById("btn-screenshot");
+    const originalText = btn.textContent;
+    btn.textContent = t().saving;
     btn.disabled = true;
-    btn.textContent = "⏳ Generating…";
 
     try {
-      const canvas = await html2canvas(document.getElementById("proof-card"), {
-        scale: 2,          // 2× for sharp screens
+      const element = document.getElementById("proof-card");
+      const canvas = await html2canvas(element, { 
+        scale: 2, 
         useCORS: true,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#FFFFFF" 
       });
-      const imageDataUrl = canvas.toDataURL("image/png");
-      showShareScreen({ ...data, imageDataUrl });
+      const imgData = canvas.toDataURL("image/png");
+      
+      const link = document.createElement("a");
+      link.download = `HarvestHonor-${data.crop}-${data.city}.png`;
+      link.href = imgData;
+      link.click();
+      
+      btn.textContent = originalText;
+      btn.disabled = false;
     } catch (err) {
-      alert("Could not generate image: " + err.message);
-      btn.disabled  = false;
-      btn.textContent = "📸 Generate Share Image";
-      console.error(err);
+      console.error("Screenshot failed", err);
+      btn.textContent = "Screenshot failed — try again";
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }, 3000);
     }
   });
 }
 
-// ============================================================
-// SCREEN 4 — SHARE SCREEN
-// ============================================================
+function comparePrice(crop, city, quantity, quotedPrice) {
+  const result = {
+    crop: crop,
+    city: city,
+    quantity: quantity,
+    quotedPrice: quotedPrice,
+    marketPrice: null,
+    percentageGap: null,
+    rupeeDifference: null,
+    verdict: null,
+    confidenceLevel: null,
+    confidenceLabel: null,
+    error: null
+  };
 
-function showShareScreen(data) {
-  const app = document.getElementById("app");
+  if (typeof quantity !== 'number' || quantity <= 0 || 
+      typeof quotedPrice !== 'number' || quotedPrice <= 0) {
+    result.error = typeof t === 'function' ? t().errorInvalidQty : "Please enter a valid quantity and price.";
+    return result;
+  }
 
-  app.innerHTML = `
-    <div class="screen-share" id="screen-share">
+  const normCrop = typeof crop === 'string' ? crop.trim().toLowerCase() : "";
+  const normCity = typeof city === 'string' ? city.trim().toLowerCase() : "";
 
-      <!-- Header -->
-      <header class="app-header" style="width:100%;">
-        <span class="logo-emoji">🌾</span>
-        <span class="logo-text">HarvestHonor</span>
-      </header>
+  const pricesData = typeof priceData !== 'undefined' ? priceData : {};
 
-      <p style="font-size:15px;font-weight:700;text-align:center;">Your Proof Card is Ready! 🎉</p>
-      <p class="text-muted" style="font-size:13px;text-align:center;">
-        Download or share it as evidence when negotiating with buyers.
-      </p>
+  // Edge Case 1: Missing crop/city data
+  if (!pricesData[normCrop]) {
+    let errStr = typeof t === 'function' ? t().errorNoData : "Data not available for [crop] in [city]. Try a nearby city or check pbs.gov.pk directly.";
+    result.error = errStr.replace("[crop]", crop).replace("[city]", city);
+    return result;
+  }
 
-      <!-- Image Preview -->
-      <div class="share-preview">
-        <img src="${data.imageDataUrl}" alt="HarvestHonor Proof Card" />
-      </div>
+  const cityData = pricesData[normCrop][normCity];
+  if (!cityData) {
+    let errStr = typeof t === 'function' ? t().errorNoData : "Data not available for [crop] in [city]. Try a nearby city or check pbs.gov.pk directly.";
+    result.error = errStr.replace("[crop]", crop).replace("[city]", city);
+    return result;
+  }
 
-      <!-- Download -->
-      <button class="btn btn-primary" id="btn-download">
-        ⬇️ Download Image
-      </button>
+  result.marketPrice = cityData.price;
+  result.confidenceLevel = cityData.confidence;
 
-      <!-- Native Share (if supported) -->
-      ${navigator.share ? `
-      <button class="btn btn-share" id="btn-native-share">
-        📤 Share via WhatsApp / SMS
-      </button>` : ""}
+  const gap = ((quotedPrice - result.marketPrice) / result.marketPrice) * 100;
+  result.percentageGap = Math.round(gap * 10) / 10;
 
-      <!-- Copy advice -->
-      <p class="text-muted" style="font-size:12px;text-align:center;line-height:1.6;">
-        Long-press the image above to save it, or use the download button.<br>
-        Share on WhatsApp to get a better price from your buyer!
-      </p>
+  result.rupeeDifference = ((quotedPrice - result.marketPrice) / 100) * quantity;
 
-      <button class="btn btn-secondary" id="btn-start-over-share">
-        🔄 Compare Another Crop
-      </button>
+  if (result.percentageGap < -10) {
+    result.verdict = "underpaid";
+  } else if (result.percentageGap > 10) {
+    result.verdict = "above_market";
+  } else {
+    result.verdict = "fair";
+  }
 
-    </div>
-  `;
+  return result;
+}
 
-  // Download
-  document.getElementById("btn-download").addEventListener("click", () => {
-    const a      = document.createElement("a");
-    a.href       = data.imageDataUrl;
-    a.download   = `harvesthonor-proof-${data.crop}-${data.city}.png`;
-    a.click();
+function getActionOptions(verdict, confidenceLevel) {
+  if (verdict === "underpaid" && confidenceLevel === "high") {
+    return [
+      "Try negotiating — show this result to the buyer",
+      "Check another buyer nearby before deciding",
+      "Wait 1 to 2 days if your crop allows it"
+    ];
+  }
+  if (verdict === "underpaid" && confidenceLevel === "moderate") {
+    return [
+      "Verify the price at your local mandi first",
+      "Ask other farmers in the area what they got",
+      "Use this as a starting point only, not final answer"
+    ];
+  }
+  if (verdict === "fair") {
+    return [
+      "Price is reasonable — you can proceed",
+      "Ask if the buyer can go slightly higher",
+      "Compare with one more buyer to be sure"
+    ];
+  }
+  if (verdict === "above_market") {
+    return [
+      "This is a good offer — better than market rate",
+      "Consider selling now before prices shift",
+      "Confirm quantity and quality terms before agreeing"
+    ];
+  }
+  
+  return [
+    "Check your inputs and try again",
+    "Visit your local mandi for current prices",
+    "Contact your nearest agriculture office"
+  ];
+}
+
+function runTests() {
+  console.log("--- RUNNING TESTS ---");
+  const originalData = typeof priceData !== 'undefined' ? priceData : null;
+  window.priceData = {
+    "tomato": {
+      "karachi": { "price": 3200, "confidence": "high" },
+      "lahore": { "price": 4100, "confidence": "high" },
+      "multan": { "price": 3800, "confidence": "moderate" }
+    },
+    "onion": {
+      "karachi": { "price": 1800, "confidence": "high" },
+      "lahore": { "price": 2100, "confidence": "high" }
+    }
+  };
+
+  const tests = [
+    {
+      name: "1. A crop and city that exists — underpaid result",
+      args: ["tomato", "karachi", 100, 2000],
+      check: (res) => res.verdict === "underpaid" && res.error === null
+    },
+    {
+      name: "2. A crop and city that exists — fair result",
+      args: ["tomato", "karachi", 100, 3100],
+      check: (res) => res.verdict === "fair" && res.error === null
+    },
+    {
+      name: "3. A crop and city that exists — above market result",
+      args: ["tomato", "karachi", 100, 4000],
+      check: (res) => res.verdict === "above_market" && res.error === null
+    },
+    {
+      name: "6. Quantity entered as 0",
+      args: ["tomato", "karachi", 0, 3200],
+      check: (res) => res.error !== null
+    },
+    {
+      name: "7. QuotedPrice entered as 0",
+      args: ["tomato", "karachi", 100, 0],
+      check: (res) => res.error !== null
+    },
+    {
+      name: "8. Inputs with extra spaces and uppercase letters",
+      args: ["  Tomato  ", "  KARACHI  ", 100, 2000],
+      check: (res) => res.verdict === "underpaid" && res.error === null
+    }
+  ];
+
+  tests.forEach((t) => {
+    console.log("\\nTesting: " + t.name);
+    console.log("Inputs: crop=" + t.args[0] + ", city=" + t.args[1] + ", quantity=" + t.args[2] + ", quotedPrice=" + t.args[3]);
+    const result = comparePrice(...t.args);
+    console.log("Result object:", result);
+    const passed = t.check(result);
+    console.assert(passed, "Test failed: " + t.name);
+    console.log(passed ? "✅ Passed" : "❌ Failed");
   });
 
-  // Native Web Share API
-  const nativeBtn = document.getElementById("btn-native-share");
-  if (nativeBtn) {
-    nativeBtn.addEventListener("click", async () => {
-      try {
-        // Convert dataURL → Blob → File for sharing
-        const res   = await fetch(data.imageDataUrl);
-        const blob  = await res.blob();
-        const file  = new File([blob], "harvesthonor-proof.png", { type: "image/png" });
-
-        await navigator.share({
-          title: "HarvestHonor Proof Card",
-          text:  `I checked the PBS market price for ${CROP_LABELS[data.crop] || data.crop} in ${CITY_LABELS[data.city] || data.city}. Here's my price verification.`,
-          files: [file],
-        });
-      } catch (err) {
-        // User cancelled or share not supported with files — silently ignore
-        console.warn("Share cancelled or unsupported:", err.message);
-      }
-    });
-  }
-
-  document.getElementById("btn-start-over-share").addEventListener("click", () => showInputScreen());
+  console.log("\\n--- TESTS COMPLETE ---");
+  window.priceData = originalData;
 }
 
-// ============================================================
-// CORE BUSINESS LOGIC
-// ============================================================
-
-/**
- * comparePrice()
- * Looks up PBS market price, computes gap, then calls AI for a verdict.
- *
- * PBS prices in JSON are per 100 kg → divide by 100 to get per-kg.
- */
-async function comparePrice(crop, city, quantity, quotedPrice) {
-  if (!priceData[crop]) throw new Error(`No data found for crop: ${crop}`);
-  if (!priceData[crop][city]) throw new Error(`No data for ${crop} in ${city}`);
-
-  const marketPricePer100 = priceData[crop][city].price;
-  const marketPrice       = marketPricePer100 / 100;           // Rs per kg
-
-  // Gap: positive = farmer is being underpaid
-  const percentageGap = ((marketPrice - quotedPrice) / marketPrice) * 100;
-  const verdict       = percentageGap > UNDERPAID_THRESHOLD ? "UNDERPAID" : "FAIR";
-
-  console.log(`[HarvestHonor] comparePrice → market: ${marketPrice}, offered: ${quotedPrice}, gap: ${percentageGap.toFixed(2)}%, verdict: ${verdict}`);
-
-  // Fetch AI verdict (non-blocking — UI shows loading state)
-  let aiVerdict = null;
-  try {
-    aiVerdict = await getAIVerdict(
-      CROP_LABELS[crop] || crop,
-      CITY_LABELS[city] || city,
-      marketPrice,
-      quotedPrice,
-      percentageGap,
-      verdict
-    );
-  } catch (err) {
-    console.warn("[HarvestHonor] AI verdict failed:", err.message);
-    aiVerdict = null;
-  }
-
-  return {
-    crop,
-    city,
-    quantity,
-    quotedPrice,
-    marketPrice,
-    percentageGap: Math.abs(percentageGap),   // always display as positive
-    verdict,
-    aiVerdict,
-    confidence: priceData[crop][city].confidence || "high",
-  };
-}
-
-// ============================================================
-// HELPER UTILITIES
-// ============================================================
-
-/** Format a number as Pakistani Rupees. e.g. 1500 → "Rs 1,500" */
-function formatPKR(amount) {
-  if (amount == null || isNaN(amount)) return "—";
-  return "Rs " + Number(amount).toLocaleString("en-PK", { maximumFractionDigits: 0 });
-}
-
-/** Format a percentage to 1 decimal place. e.g. 12.3456 → "12.3%" */
-function formatPercent(value) {
-  if (value == null || isNaN(value)) return "—";
-  return Math.abs(value).toFixed(1) + "%";
-}
-
-/** Inject a full-screen loading overlay. */
-function showSpinner(message = "Loading…") {
-  hideSpinner();
-  const overlay = document.createElement("div");
-  overlay.className = "spinner-overlay";
-  overlay.id = "spinner-overlay";
-  overlay.innerHTML = `
-    <div class="spinner" role="status" aria-label="Loading"></div>
-    <p class="spinner-label">${message}</p>
-  `;
-  document.body.appendChild(overlay);
-}
-
-/** Remove the loading overlay. */
-function hideSpinner() {
-  const el = document.getElementById("spinner-overlay");
-  if (el) el.remove();
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  runTests();
 }
